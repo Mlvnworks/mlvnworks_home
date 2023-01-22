@@ -1,3 +1,39 @@
+<?php
+    $webDevBlog = [];
+    $qoutes = [];
+    $portfolio = [];
+    $secretMessage = [];
+    $memes = [];
+
+    try{
+        include "./connection/connect.php";
+        $querySiteSetting = "SELECT * FROM sites";
+
+        $result = $connection->query($querySiteSetting);
+
+        while($row = $result->fetch_assoc()){
+            if($row["id"] == 1){
+                $webDevBlog = $row;
+
+            }else if($row["id"] == 6){
+                $qoutes = $row;
+
+            }else if($row["id"] == 9){
+                $portfolio = $row;
+
+            }else if($row["id"] == 10){
+                $secretMessage = $row;
+            }else if($row["id"] == 11){
+                $memes = $row;
+            }
+
+        }
+
+    }catch(Exception $err){
+        echo $err->getMessage();
+    }
+
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -36,36 +72,36 @@
         </header>
         <main>
             <section id="grid-section">
-                <div class="grid-item 1">
-                    <p class="title">Web Development</p>
+                <div class="grid-item 1" data-err-reason ="<?= $webDevBlog["reason_if_unavailable"] ?>" data-available="<?= $webDevBlog["available"] == 1 ? 'TRUE' : 'FALSE' ?>" data-link="<?= $webDevBlog["link"] ?>">
+                    <p class="title"><?= $webDevBlog["site_name"] ?></p>
                     <div class="img-container">
                         <img src="./images/489168 1webdev.png" alt="" />
                     </div>
                 </div>
 
-                <div class="grid-item 2">
-                    <p class="title">Qoutes</p>
+                <div class="grid-item 2" data-err-reason ="<?= $qoutes["reason_if_unavailable"] ?>" data-available="<?= $qoutes["available"] == 1 ? 'TRUE' : 'FALSE' ?>" data-link="<?= $qoutes["link"] ?>">
+                    <p class="title"><?= $qoutes["site_name"] ?></p>
                     <div class="img-container">
                         <img src="./images/4K-Tropical-Flowers-Aircraft-Picture 1.png" alt="" />
                     </div>
                 </div>
 
-                <div class="grid-item 3">
-                    <p class="title">Portfolio</p>
+                <div class="grid-item 3" data-err-reason ="<?= $portfolio["reason_if_unavailable"]?>" data-available="<?= $portfolio["available"] == 1 ? 'TRUE' : 'FALSE' ?>" data-link="<?= $portfolio["link"] ?>">
+                    <p class="title"><?= $portfolio["site_name"] ?></p>
                     <div class="img-container">
                         <img src="./images/390439 1.png" alt="" />
                     </div>
                 </div>
 
-                <div class="grid-item 4">
-                    <p class="title">Anonymous Message</p>
+                <div class="grid-item 4" data-err-reason ="<?= $secretMessage["reason_if_unavailable"]?>" data-available="<?= $secretMessage["available"] == 1 ? 'TRUE' : 'FALSE' ?>" data-link="<?= $secretMessage["link"] ?>">
+                    <p class="title"><?= $secretMessage["site_name"] ?></p>
                     <div class="img-container">
                         <img src="./images/secret-pic.png" alt="" />
                     </div>
                 </div>
 
-                <div class="grid-item 5">
-                    <p class="title">Memes</p>
+                <div class="grid-item 5" data-err-reason ="<?= $memes["reason_if_unavailable"]?>" data-available="<?= $memes["available"] == 1 ? 'TRUE' : 'FALSE' ?>" data-link="<?= $memes["link"] ?>">
+                    <p class="title"><?= $memes["site_name"] ?></p>
                     <div class="img-container">
                         <img src="./images/2877459 1.png" alt="" />
                     </div>
@@ -78,6 +114,8 @@
             if(isset($_GET["search"])){
                 include "./assets/modal/searchModal.php";
             }
+
+            include "./assets/modal/alertModal.html";
         ?>
         <footer>Copyright &copy; 2022 mlvnworks.com</footer>
         <script>
@@ -89,6 +127,24 @@
             const closeModalBtn = document.querySelector("#close-search-modal");
             const searchModal = document.querySelector("#search-modal");
 
+            // Alert modal
+            const gridItems = document.querySelectorAll(".grid-item");
+            const alertModal = document.querySelector(".alert-modal");
+            const closeAlertModalBtn = document.querySelector("#close-alert-modal");
+            
+            const checkSiteAvailability = (data, link,reason) => {
+                if(data === "FALSE"){
+                    alertModal.style.display = "flex";
+                    alertModal.querySelector("#alert-msg").textContent = reason;
+                    
+                }else{
+                    location.href = link;
+                }
+            }
+
+            gridItems.forEach(gridItem => {
+                gridItem.addEventListener("click", () => checkSiteAvailability(gridItem.getAttribute("data-available"), gridItem.getAttribute("data-link"), gridItem.getAttribute("data-err-reason")));
+            })
             
             
             const checkSearchInput = (ev)  => {
@@ -103,7 +159,15 @@
 
             //event handling    
             searchForm.addEventListener("submit", checkSearchInput);
-            closeModalBtn.addEventListener("click", closeSearchModal)
+
+            if(closeModalBtn !== null){
+                closeModalBtn.addEventListener("click", closeSearchModal)
+            }
+
+            if(closeAlertModalBtn !== null){
+                closeAlertModalBtn.addEventListener("click", () => alertModal.style.display="none")
+            }
+
         </script>
     </body>
 </html>

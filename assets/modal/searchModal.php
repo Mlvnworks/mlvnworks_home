@@ -1,6 +1,39 @@
 <?php
     $searchResult = null;
+
     $searchKeyword = htmlspecialchars($_GET["search"]);
+
+    try{
+        $splitWordSearch = explode(" ", strtolower($searchKeyword));
+
+        
+        include "./connection/connect.php";
+
+        $query = [
+            "SELECT * FROM search_keywords WHERE keyword LIKE '%". $splitWordSearch[0]. "%'",
+        ];
+
+       
+
+        if(count($splitWordSearch) > 1){
+            for($i = 1; $i < count($splitWordSearch); $i++){
+                $query = [...$query, " OR KEYWORD LIKE '%". $splitWordSearch[$i] ."%'"];  
+            }
+        }
+
+        $query = join("", $query);
+        
+        $response = $connection -> query($query);
+
+        $searchResult = [];
+        while($row = $response->fetch_assoc()){
+            $searchResult = [...$searchResult, $row];
+        };
+
+        $connection -> close();
+    }catch(Exception $err){
+        echo $err->getMessage();
+    }
 ?>
 
 <section id="search-modal">
@@ -14,15 +47,18 @@
             <p><span>Search for:</span> <?= $searchKeyword ?></p>
         </div>
         <?php if($searchResult === null) echo '<div id="search-loading"></div>';
-                else if($searchResult !== null && count($searchResult) > 0)
+                else if($searchResult !== null && count($searchResult) > 0){
+                    foreach($searchResult as $resultItem){
                         echo ('<ul id="search-result-lists">
                             <li class="search-result-item">
-                                <a href="#">
-                                    <header>Search Result Item 1</header>
-                                    <p class="search-result-link"><i>//somthinglink...</i></p>
+                                <a href="'.$resultItem["link"]. '">
+                                    <header>'.$resultItem["keyword"].'</header>
+                                    <p class="search-result-link"><i>"'.$resultItem["link"]. '"</i></p>
                                 </a>
                             </li>
                         </ul>');
+                    }
+                }
                 else echo '<div id="not-found">No Result Found!</div>'
         ?>
         
