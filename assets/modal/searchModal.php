@@ -9,19 +9,14 @@
         
         include "./connection/connect.php";
 
-        $query = [
-            "SELECT * FROM search_keywords WHERE keyword LIKE '%". $splitWordSearch[0]. "%'",
-        ];
-
-       
-
-        if(count($splitWordSearch) > 1){
-            for($i = 1; $i < count($splitWordSearch); $i++){
-                $query = [...$query, " OR KEYWORD LIKE '%". $splitWordSearch[$i] ."%'"];  
-            }
-        }
-
-        $query = join("", $query);
+        $query = 
+            'SELECT 
+            CONCAT(blogs.head_line, blogs.json_content) as keyword,
+            blogs.head_line,
+            search_keywords.link
+            from search_keywords
+            INNER JOIN blogs on search_keywords.target_id = blogs.id
+            WHERE CONCAT(blogs.head_line, blogs.json_content) LIKE "%'.$searchKeyword.'%"';
         
         $response = $connection -> query($query);
 
@@ -29,7 +24,7 @@
         while($row = $response->fetch_assoc()){
             $searchResult = [...$searchResult, $row];
         };
-
+        
         $connection -> close();
     }catch(Exception $err){
         echo $err->getMessage();
@@ -52,7 +47,7 @@
                         echo ('<ul id="search-result-lists">
                             <li class="search-result-item">
                                 <a href="'.$resultItem["link"]. '">
-                                    <header>'.$resultItem["keyword"].'</header>
+                                    <header>'.$resultItem["head_line"].'</header>
                                     <p class="search-result-link"><i>"'.$resultItem["link"]. '"</i></p>
                                 </a>
                             </li>
@@ -61,6 +56,5 @@
                 }
                 else echo '<div id="not-found">No Result Found!</div>'
         ?>
-        
     </section>
 </section>

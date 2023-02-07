@@ -154,7 +154,7 @@
             }
 
             const closeSearchModal = () => {
-                searchModal.style.display="none";
+                location.href = '<?= $_SERVER["PHP_SELF"] ?>';
             }
 
             //event handling    
